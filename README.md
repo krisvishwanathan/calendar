@@ -1,3 +1,6 @@
+In project directry start with:
+git clone https://github.com/krisvishwanathan/calendar.git
+
 virtualenv env
 
 source env/bin/activate
