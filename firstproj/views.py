@@ -1,69 +1,97 @@
-# myapp/views.py
 from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from .forms import AgentForm
-from django.http import JsonResponse 
-from .models import Events 
+from .models import Events
 
 def incall_form(request):
     if request.method == 'POST':
         form = AgentForm(request.POST, request.FILES)
-        if form.is_valid():
+        if form.is_valid():  # Corrected syntax error here
             form.save()
-            return redirect('success_page')  # Redirect to a success page
+            return redirect('success_page')
     else:
         form = AgentForm()
-    return render(request, '../templates/incall_form.html', {'form': form})
+    return render(request, 'incall_form.html', {'form': form})
 
 def hello(request):
     return HttpResponse("Hello, World!")
 
-
-# Create your views here.
 def index(request):  
     all_events = Events.objects.all()
     context = {
-        "events":all_events,
+        "events": all_events,
     }
-    return render(request,'index.html',context)
- 
-def all_events(request):                                                                                                 
-    all_events = Events.objects.all()                                                                                    
-    out = []                                                                                                             
-    for event in all_events:                                                                                             
-        out.append({                                                                                                     
-            'title': event.name,                                                                                         
-            'id': event.id,                                                                                              
-            'start': event.start.strftime("%m/%d/%Y, %H:%M:%S"),                                                         
-            'end': event.end.strftime("%m/%d/%Y, %H:%M:%S"),                                                             
-        })                                                                                                               
-                                                                                                                      
-    return JsonResponse(out, safe=False) 
- 
+    return render(request, 'index.html', context)
+
+def all_events(request):
+    all_events = Events.objects.all()
+    events_list = [{
+        'title': event.name,
+        'id': event.id,
+        'start': event.start.strftime("%Y-%m-%d %H:%M:%S"),
+        'end': event.end.strftime("%Y-%m-%d %H:%M:%S"),
+        'client_name': event.client_name,
+        'client_phone': event.client_phone,
+        'client_address': event.client_address,
+        'additional_info': event.additional_info,
+    } for event in all_events]
+    return JsonResponse(events_list, safe=False)
+
+@csrf_exempt
 def add_event(request):
-    start = request.GET.get("start", None)
-    end = request.GET.get("end", None)
-    title = request.GET.get("title", None)
-    event = Events(name=str(title), start=start, end=end)
-    event.save()
-    data = {}
-    return JsonResponse(data)
- 
+    if request.method == 'POST':
+        title = request.POST.get("title")
+        start = request.POST.get("start")
+        end = request.POST.get("end")
+        client_name = request.POST.get("client_name")
+        client_phone = request.POST.get("client_phone")
+        client_address = request.POST.get("client_address")
+        additional_info = request.POST.get("additional_info")
+
+        event = Events(name=title, start=start, end=end, client_name=client_name, client_phone=client_phone, client_address=client_address, additional_info=additional_info)
+        event.save()
+        return JsonResponse({'status': 'Success', 'msg': 'Event added successfully'})
+    else:
+        return HttpResponse("Invalid request", status=400)
+
+@csrf_exempt
 def update(request):
-    start = request.GET.get("start", None)
-    end = request.GET.get("end", None)
-    title = request.GET.get("title", None)
-    id = request.GET.get("id", None)
-    event = Events.objects.get(id=id)
-    event.start = start
-    event.end = end
-    event.name = title
-    event.save()
-    data = {}
-    return JsonResponse(data)
- 
+    if request.method == 'POST':
+        id = request.POST.get("id")
+        title = request.POST.get("title")
+        start = request.POST.get("start")
+        end = request.POST.get("end")
+        client_name = request.POST.get("client_name")
+        client_phone = request.POST.get("client_phone")
+        client_address = request.POST.get("client_address")
+        additional_info = request.POST.get("additional_info")
+        
+        try:
+            event = Events.objects.get(id=id)
+            event.name = title
+            event.start = start
+            event.end = end
+            event.client_name = client_name
+            event.client_phone = client_phone
+            event.client_address = client_address
+            event.additional_info = additional_info
+            event.save()
+            return JsonResponse({'status': 'Success', 'msg': 'Event updated successfully'})
+        except Events.DoesNotExist:
+            return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})
+    else:
+        return HttpResponse("Invalid request", status=400)
+
+@csrf_exempt
 def remove(request):
-    id = request.GET.get("id", None)
-    event = Events.objects.get(id=id)
-    event.delete()
-    data = {}
-    return JsonResponse(data)
+    if request.method == 'POST':
+        id = request.POST.get("id")
+        try:
+            event = Events.objects.get(id=id)
+            event.delete()
+            return JsonResponse({'status': 'Success', 'msg': 'Event deleted successfully'})
+        except Events.DoesNotExist:
+            return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})
+    else:
+        return HttpResponse("Invalid request", status=400)

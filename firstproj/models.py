@@ -1,4 +1,3 @@
-# myapp/models.py
 from django.db import models
 
 class Agent(models.Model):
@@ -15,13 +14,16 @@ class Agent(models.Model):
 
     def __str__(self):
         return self.agent_name
- 
-# Create your models here.
+
 class Events(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255,null=True,blank=True)
-    start = models.DateTimeField(null=True,blank=True)
-    end = models.DateTimeField(null=True,blank=True)
- 
-    class Meta:  
+    name = models.CharField(max_length=255, null=True, blank=True)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
+    client_name = models.CharField(max_length=255, null=True, blank=True)
+    client_phone = models.CharField(max_length=20, null=True, blank=True)
+    client_address = models.TextField(null=True, blank=True)
+    additional_info = models.TextField(null=True, blank=True)
+
+    class Meta:
         db_table = "tblevents"
