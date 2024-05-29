@@ -1,13 +1,41 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from .forms import AgentForm
 from .models import Events
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+
+def user_is_authorized(function):
+    def wrap(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return function(request, *args, **kwargs)
+        else:
+            login_url = reverse('login')
+            return HttpResponseRedirect(f"{login_url}?next={request.path}&error=unauthorized")
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect(request.GET.get('next', 'index'))
+        else:
+            return render(request, 'login.html', {'error': 'Invalid username or password'})
+    else:
+        error = request.GET.get('error')
+        return render(request, 'login.html', {'error': 'You are not authorized to access this page. Please login to continue.' if error else None})
 
 def incall_form(request):
     if request.method == 'POST':
         form = AgentForm(request.POST, request.FILES)
-        if form.is_valid():  # Corrected syntax error here
+        if form.is_valid():
             form.save()
             return redirect('success_page')
     else:
@@ -17,15 +45,17 @@ def incall_form(request):
 def hello(request):
     return HttpResponse("Hello, World!")
 
+@user_is_authorized
 def index(request):  
-    all_events = Events.objects.all()
+    all_events = Events.objects.filter(user=request.user)
     context = {
         "events": all_events,
     }
     return render(request, 'index.html', context)
 
+@login_required
 def all_events(request):
-    all_events = Events.objects.all()
+    all_events = Events.objects.filter(user=request.user)
     events_list = [{
         'title': event.name,
         'id': event.id,
@@ -39,23 +69,24 @@ def all_events(request):
     return JsonResponse(events_list, safe=False)
 
 @csrf_exempt
+@login_required
 def add_event(request):
     if request.method == 'POST':
-        title = request.POST.get("title")
-        start = request.POST.get("start")
-        end = request.POST.get("end")
-        client_name = request.POST.get("client_name")
-        client_phone = request.POST.get("client_phone")
-        client_address = request.POST.get("client_address")
-        additional_info = request.POST.get("additional_info")
-
-        event = Events(name=title, start=start, end=end, client_name=client_name, client_phone=client_phone, client_address=client_address, additional_info=additional_info)
+        event = Events(
+            user=request.user,
+            name=request.POST.get("title"),
+            start=request.POST.get("start"),
+            end=request.POST.get("end"),
+            client_name=request.POST.get("client_name"),
+            client_phone=request.POST.get("client_phone"),
+            client_address=request.POST.get("client_address"),
+            additional_info=request.POST.get("additional_info")
+        )
         event.save()
         return JsonResponse({'status': 'Success', 'msg': 'Event added successfully'})
-    else:
-        return HttpResponse("Invalid request", status=400)
 
 @csrf_exempt
+@user_is_authorized
 def update(request):
     if request.method == 'POST':
         id = request.POST.get("id")
@@ -68,7 +99,7 @@ def update(request):
         additional_info = request.POST.get("additional_info")
         
         try:
-            event = Events.objects.get(id=id)
+            event = Events.objects.get(id=id, user=request.user)
             event.name = title
             event.start = start
             event.end = end
@@ -84,11 +115,12 @@ def update(request):
         return HttpResponse("Invalid request", status=400)
 
 @csrf_exempt
+@user_is_authorized
 def remove(request):
     if request.method == 'POST':
         id = request.POST.get("id")
         try:
-            event = Events.objects.get(id=id)
+            event = Events.objects.get(id=id, user=request.user)
             event.delete()
             return JsonResponse({'status': 'Success', 'msg': 'Event deleted successfully'})
         except Events.DoesNotExist:

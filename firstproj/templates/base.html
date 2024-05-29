@@ -33,6 +33,19 @@
             cursor: pointer;
             font-size: 16px;
         }
+        #logout-button {
+            position: fixed;
+            top: 10px;
+            right: 80px; /* Adjust spacing as needed */
+            z-index: 1000;
+            background: #9bd7ff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+        }
         #create-event-button {
             position: fixed;
             top: 10px;
@@ -115,6 +128,7 @@
 <button id="theme-toggle">
     <span id="theme-icon" class="bi bi-brightness-high"></span>
 </button>
+<button id="logout-button">Logout</button>
 <button id="create-event-button">Create Event</button>
 <div class="container">
     <h4 style="text-align: center;">FullCalendar CRUD</h4>
@@ -174,6 +188,10 @@
 </div>
 
 <script>
+document.getElementById('logout-button').onclick = function() {
+    window.location.href = "{% url 'logout' %}";
+};
+
 $(document).ready(function() {
     $('#event-info-dialog').draggable(); // Make the dialog draggable
 
@@ -382,7 +400,9 @@ $(document).ready(function() {
     window.closeDialog = function() {
         $('#event-info-dialog').hide();
     };
+    
 });
+
 </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Agent(models.Model):
     agent_name = models.CharField(max_length=100)
@@ -16,7 +17,7 @@ class Agent(models.Model):
         return self.agent_name
 
 class Events(models.Model):
-    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, null=True, blank=True)
     start = models.DateTimeField(null=True, blank=True)
     end = models.DateTimeField(null=True, blank=True)
@@ -26,4 +27,4 @@ class Events(models.Model):
     additional_info = models.TextField(null=True, blank=True)
 
     class Meta:
-        db_table = "tblevents"
+        db_table = "tblevents"  
