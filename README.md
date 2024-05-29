@@ -25,4 +25,5 @@ access your site http://localhost:8000/ access the calendar
 
 # Install/Uninstall project as a package
 pip install .\dist\calendar-1.0-py3-none-any.whl
+
 pip uninstall .\dist\calendar-1.0-py3-none-any.whl
