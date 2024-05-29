@@ -1,16 +1,28 @@
-In project directry start with:
+# In project directry start with: 
 git clone https://github.com/krisvishwanathan/calendar.git
 
-virtualenv env
+# Set up virtual environment
+virtualenv env -> python -m venv .venv
 
-source env/bin/activate
+source env/bin/activate -> .venv/Scripts/activate
 
-pip install -requirements
+deactivate
 
-python3.10 manage.py makemigrations
+# Change directories to project folder
+cd ./calendar
 
-python3.10 manage.py migrate
+pip install -r requirements.txt
 
-python3.10 manage.py runserver
+pip list
+
+python3.10 manage.py makemigrations -> python manage.py makemigrations
+
+python3.10 manage.py migrate -> python manage.py migrate
+
+python3.10 manage.py runserver -> python manage.py runserver [can specify port if necessary]
 
 access your site http://localhost:8000/ access the calendar
+
+# Install/Uninstall project as a package
+pip install .\dist\calendar-1.0-py3-none-any.whl
+pip uninstall .\dist\calendar-1.0-py3-none-any.whl
