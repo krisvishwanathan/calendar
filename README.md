@@ -1,4 +1,4 @@
-# In project directry start with: 
+# In project directory start with: 
 git clone https://github.com/krisvishwanathan/calendar.git
 
 # Set up virtual environment
