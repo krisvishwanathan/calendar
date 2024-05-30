@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 class myAppNameConfig(AppConfig):
-    name = 'firstproj'
-    verbose_name = 'Incoming Call'
+    name = 'stcalander'
+    verbose_name = 'stcalander'
