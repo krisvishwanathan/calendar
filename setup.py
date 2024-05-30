@@ -5,8 +5,7 @@ setup(
     version='1.0',
     packages=find_packages(),
     include_package_data=True,
-    include_package_data=True,
-        install_requires=[
+    install_requires=[
         "django>=4.0",
         "python-dotenv==1.0.0",
         "whitenoise==6.5.0",
