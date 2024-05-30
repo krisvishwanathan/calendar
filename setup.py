@@ -4,7 +4,7 @@ setup(
     name='stcalander',
     version='1.1',
     package_dir = {"": "stcalander"},
-    packages=find_packages(),
+    packages=find_packages(where="stcalander"),
     include_package_data=True,
     install_requires=[
         "django>=4.0",
