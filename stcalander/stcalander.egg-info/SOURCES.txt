@@ -1,0 +1,7 @@
+README.md
+setup.py
+stcalander.egg-info/PKG-INFO
+stcalander.egg-info/SOURCES.txt
+stcalander.egg-info/dependency_links.txt
+stcalander.egg-info/requires.txt
+stcalander.egg-info/top_level.txt
