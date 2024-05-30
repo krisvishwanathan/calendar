@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from .forms import AgentForm
 from .models import Events
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.conf import settings
 
 def user_is_authorized(function):
     def wrap(request, *args, **kwargs):
@@ -32,24 +32,14 @@ def user_login(request):
         error = request.GET.get('error')
         return render(request, 'login.html', {'error': 'You are not authorized to access this page. Please login to continue.' if error else None})
 
-def incall_form(request):
-    if request.method == 'POST':
-        form = AgentForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('success_page')
-    else:
-        form = AgentForm()
-    return render(request, 'incall_form.html', {'form': form})
-
-def hello(request):
-    return HttpResponse("Hello, World!")
 
 @user_is_authorized
 def index(request):  
     all_events = Events.objects.filter(user=request.user)
+    baseURL = settings.TEMPLATE_BASE
     context = {
         "events": all_events,
+        "baseURL" : baseURL,
     }
     return render(request, 'index.html', context)
 

@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+TEMPLATE_BASE = 'base.html'
 
 # Application definition
 

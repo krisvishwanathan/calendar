@@ -7,7 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', views.user_login, name='login'),
     path('logout/', LogoutView.as_view(next_page='/login/'), name='logout'),
-    path('incall/', views.incall_form, name='incall'),
     path('all_events/', views.all_events, name='all_events'),
     path('add_event/', views.add_event, name='add_event'),
     path('update/', views.update, name='update'),
