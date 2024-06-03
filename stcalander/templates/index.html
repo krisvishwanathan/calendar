@@ -1,100 +1,94 @@
-
 {% extends baseURL %}
    
-{% block title %}FullCalender CRUD (Create, Read, Update and Delete){% endblock title %}
+{% block title %}FullCalendar CRUD (Create, Read, Update and Delete){% endblock title %}
    
 {% block body %}
-<div class="col-md-12">    
-    <div id='calendar'></div> 
-</div> 
-<body class="light-mode">
-    <button id="theme-toggle">
-        <span id="theme-icon" class="bi bi-brightness-high"></span>
-    </button>
-    <button id="logout-button">Logout</button>
-    <button id="create-event-button">Create Event</button>
-    <div class="container">
-        <h4 style="text-align: center;">FullCalendar CRUD</h4>
-        <div id="calendar"></div>
-    </div>
-    
-    <div id="event-info-dialog">
-        <div class="row">
-            <div class="col-md-6">
-                <label for="event-title">Event Title</label>
-                <input id="event-title" type="text" class="form-control mb-2" placeholder="Event Title">
-            </div>
-            <div class="col-md-6">
-                <label for="event-date">Event Date</label>
-                <input id="event-date" type="date" class="form-control mb-2">
-            </div>
+<div class="col-md-12">
+    <div id="calendar"></div>
+</div>
+<!--button id="logout-button">Logout</button>-->
+<button id="create-event-button">Create Event</button>
+
+<div id="event-info-dialog">
+    <div id="event-info-dialog-header">Event Information</div>
+    <div class="row">
+        <div class="col-md-6">
+            <label for="event-title">Event Title</label>
+            <input id="event-title" type="text" class="form-control mb-2" placeholder="Event Title">
         </div>
-        <div class="row">
-            <div class="col-md-6">
-                <label for="start-time">Start Time</label>
-                <input id="start-time" type="time" class="form-control mb-2">
-            </div>
-            <div class="col-md-6">
-                <label for="end-time">End Time</label>
-                <input id="end-time" type="time" class="form-control mb-2">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <label for="client-name">Client Name</label>
-                <input id="client-name" type="text" class="form-control mb-2" placeholder="Client Name">
-            </div>
-            <div class="col-md-6">
-                <label for="client-phone">Client Phone Number</label>
-                <input id="client-phone" type="text" class="form-control mb-2" placeholder="Client Phone Number">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <label for="client-address">Client Address</label>
-                <input id="client-address" type="text" class="form-control mb-2" placeholder="Client Address" style="width: 100%;">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <label for="additional-info">Additional Information</label>
-                <textarea id="additional-info" class="form-control mb-2" placeholder="Additional Information" style="width: 100%;"></textarea>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <button class="btn btn-primary" onclick="saveEvent()">Save</button>
-                <button class="btn btn-danger" onclick="deleteEvent()" id="deleteButton">Delete</button>
-                <button class="btn btn-secondary" onclick="closeDialog()">Close</button>
-            </div>
+        <div class="col-md-6">
+            <label for="event-date">Event Date</label>
+            <input id="event-date" type="date" class="form-control mb-2">
         </div>
     </div>
-    
-    {% block customCalJS %}
-    <script>
-    document.getElementById('logout-button').onclick = function() {
+    <div class="row">
+        <div class="col-md-6">
+            <label for="start-time">Start Time</label>
+            <input id="start-time" type="time" class="form-control mb-2">
+        </div>
+        <div class="col-md-6">
+            <label for="end-time">End Time</label>
+            <input id="end-time" type="time" class="form-control mb-2">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <label for="client-name">Client Name</label>
+            <input id="client-name" type="text" class="form-control mb-2" placeholder="Client Name">
+        </div>
+        <div class="col-md-6">
+            <label for="client-phone">Client Phone Number</label>
+            <input id="client-phone" type="text" class="form-control mb-2" placeholder="Client Phone Number">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <label for="client-address">Client Address</label>
+            <input id="client-address" type="text" class="form-control mb-2" placeholder="Client Address" style="width: 100%;">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <label for="additional-info">Additional Information</label>
+            <textarea id="additional-info" class="form-control mb-2" placeholder="Additional Information" style="width: 100%;"></textarea>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <button class="btn btn-primary" onclick="saveEvent()">Save</button>
+            <button class="btn btn-danger" onclick="deleteEvent()" id="deleteButton">Delete</button>
+            <button class="btn btn-secondary" onclick="closeDialog()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customCalJS %}
+<script>
+    /*document.getElementById('logout-button').onclick = function() {
         window.location.href = "{% url 'logout' %}";
-    };
-    
+    };*/
+
     $(document).ready(function() {
         $('#event-info-dialog').draggable(); // Make the dialog draggable
-    
+
         var calendar = $('#calendar').fullCalendar({
             header: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'month,agendaWeek,agendaDay'
             },
-            events: '{% url "all_events" %}',
+            events: '/all_events/',
             selectable: true,
             selectHelper: true,
-            editable: true,
+            editable: true,  // Allow editing
+            droppable: true,  // Allow dragging
             eventLimit: true,
             select: function (start, end) {
                 var date = moment(start).format('YYYY-MM-DD');
                 var startTime = moment(start).format('HH:mm');
                 var endTime = moment(end).format('HH:mm');
-    
+
                 $('#event-title').val('');
                 $('#event-date').val(date);
                 $('#start-time').val(startTime);
@@ -106,12 +100,15 @@
                 $('#deleteButton').hide();
                 window.currentEvent = { start: start, end: end };
                 $('#event-info-dialog').show().position({
-                    my: "left top",
-                    at: "left bottom",
-                    of: event.target
+                    my: "center",
+                    at: "center",
+                    of: window
                 });
             },
-            eventClick: function (event) {
+            eventClick: function (event, jsEvent) {
+                jsEvent.preventDefault();
+                jsEvent.stopPropagation();
+
                 $('#event-title').val(event.title);
                 $('#event-date').val(moment(event.start).format('YYYY-MM-DD'));
                 $('#start-time').val(moment(event.start).format('HH:mm'));
@@ -123,9 +120,9 @@
                 window.currentEvent = event;
                 $('#deleteButton').show();
                 $('#event-info-dialog').show().position({
-                    my: "left top",
-                    at: "left bottom",
-                    of: event.target
+                    my: "center",
+                    at: "center",
+                    of: window
                 });
             },
             eventRender: function(event, element) {
@@ -134,8 +131,8 @@
                 element.css('color', '#ffffff');
             },
             eventResize: function (event) {
-                var start = $.fullCalendar.formatDate(event.start, "Y-MM-DD HH:mm:ss");
-                var end = $.fullCalendar.formatDate(event.end, "Y-MM-DD HH:mm:ss");
+                var start = event.start.format("Y-MM-DD HH:mm:ss");
+                var end = event.end.format("Y-MM-DD HH:mm:ss");
                 var title = event.title;
                 var id = event.id;
                 $.ajax({
@@ -162,8 +159,8 @@
                 });
             },
             eventDrop: function (event) {
-                var start = $.fullCalendar.formatDate(event.start, "Y-MM-DD HH:mm:ss");
-                var end = $.fullCalendar.formatDate(event.end, "Y-MM-DD HH:mm:ss");
+                var start = event.start.format("Y-MM-DD HH:mm:ss");
+                var end = event.end ? event.end.format("Y-MM-DD HH:mm:ss") : start;
                 var title = event.title;
                 var id = event.id;
                 $.ajax({
@@ -188,19 +185,14 @@
                         alert('There is a problem!!!');
                     }
                 });
+            },
+            viewRender: function(view) {
+                var today = moment().format("YYYY-MM-DD");
+                $(".fc-day").removeClass("fc-today-highlight");
+                $(".fc-day[data-date='" + today + "']").addClass("fc-today-highlight");
             }
         });
-    
-        $('#theme-toggle').click(function() {
-            $('body').toggleClass('dark-mode');
-            $('body').toggleClass('light-mode');
-            if ($('body').hasClass('dark-mode')) {
-                $('#theme-icon').removeClass('bi-brightness-high').addClass('bi-moon');
-            } else {
-                $('#theme-icon').removeClass('bi-moon').addClass('bi-brightness-high');
-            }
-        });
-    
+
         $('#create-event-button').click(function() {
             var today = moment().format('YYYY-MM-DD');
             $('#event-title').val('');
@@ -214,22 +206,22 @@
             $('#deleteButton').hide();
             window.currentEvent = { start: today, end: today };
             $('#event-info-dialog').show().position({
-                my: "left top",
-                at: "left bottom",
-                of: this
+                my: "center",
+                at: "center",
+                of: window
             });
         });
-    
+
         window.saveEvent = function() {
             var date = $('#event-date').val();
             var startTime = $('#start-time').val();
             var endTime = $('#end-time').val();
             var startDateTime = date + 'T' + startTime;
             var endDateTime = endTime ? (date + 'T' + endTime) : startDateTime;
-    
+
             $.ajax({
                 type: "POST",
-                url: window.currentEvent.id ? "{% url 'update'%}" : "{% url 'add_event' %}",
+                url: window.currentEvent.id ? '/update/' : '/add_event/',
                 data: {
                     id: window.currentEvent.id,
                     title: $('#event-title').val(),
@@ -255,12 +247,12 @@
                 }
             });
         };
-    
+
         window.deleteEvent = function() {
             if (confirm("Are you sure you want to delete this event?")) {
                 $.ajax({
                     type: "POST",
-                    url: "{% url 'remove' %}",
+                    url: '/remove/',
                     data: {
                         id: window.currentEvent.id,
                         csrfmiddlewaretoken: '{{ csrf_token }}'
@@ -280,14 +272,10 @@
                 });
             }
         };
-    
+
         window.closeDialog = function() {
             $('#event-info-dialog').hide();
         };
-        
     });
-    
-    </script>
-    {% endblock %}
-    
+</script>
 {% endblock %}
