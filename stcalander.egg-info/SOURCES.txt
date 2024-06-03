@@ -4,6 +4,7 @@ setup.py
 stcalander/.DS_Store
 stcalander/README.md
 stcalander/__init__.py
+stcalander/admin.py
 stcalander/apps.py
 stcalander/asgi.py
 stcalander/models.py
@@ -17,13 +18,23 @@ stcalander.egg-info/SOURCES.txt
 stcalander.egg-info/dependency_links.txt
 stcalander.egg-info/requires.txt
 stcalander.egg-info/top_level.txt
+stcalander/__pycache__/__init__.cpython-312.pyc
+stcalander/__pycache__/apps.cpython-312.pyc
+stcalander/__pycache__/models.cpython-312.pyc
+stcalander/__pycache__/settings.cpython-312.pyc
+stcalander/__pycache__/urls.cpython-312.pyc
+stcalander/__pycache__/views.cpython-312.pyc
+stcalander/migrations/0001_initial.py
+stcalander/migrations/__init__.py
+stcalander/migrations/__pycache__/0001_initial.cpython-312.pyc
+stcalander/migrations/__pycache__/__init__.cpython-312.pyc
 stcalander/stcalander.egg-info/PKG-INFO
 stcalander/stcalander.egg-info/SOURCES.txt
-stcalander/stcalander.egg-info/dependency_links.txt
 stcalander/stcalander.egg-info/requires.txt
 stcalander/stcalander.egg-info/top_level.txt
 stcalander/templates/.DS_Store
 stcalander/templates/__init__.py
 stcalander/templates/base.html
+stcalander/templates/index copy.html
 stcalander/templates/index.html
 stcalander/templates/login.html
