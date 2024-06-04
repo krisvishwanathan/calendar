@@ -1,23 +1,20 @@
 {% extends baseURL %}
-   
+
 {% block title %}FullCalendar CRUD (Create, Read, Update and Delete){% endblock title %}
-   
+
 {% block body %}
 <div class="col-md-12">
     <div id="calendar"></div>
 </div>
-<!--button id="logout-button">Logout</button>-->
-<button id="create-event-button">Create Event</button>
-
-<div id="event-info-dialog">
-    <div id="event-info-dialog-header">Event Information</div>
+<!--button id="logout-button">Logout</button-->
+<div id="event-info-dialog" style="display:none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 600px; width: 90%; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 1001; overflow-y: auto; max-height: 80vh;">
+    <div id="event-info-dialog-header" style="font-weight: bold; margin-bottom: 10px;">Event Information</div>
     <div class="row">
         <div class="col-md-6">
             <label for="event-title">Event Title</label>
             <input id="event-title" type="text" class="form-control mb-2" placeholder="Event Title">
         </div>
         <div class="col-md-6">
-            <label for="event-date">Event Date</label>
             <input id="event-date" type="date" class="form-control mb-2">
         </div>
     </div>
@@ -50,7 +47,7 @@
     <div class="row">
         <div class="col-md-12">
             <label for="additional-info">Additional Information</label>
-            <textarea id="additional-info" class="form-control mb-2" placeholder="Additional Information" style="width: 100%;"></textarea>
+            <textarea id="additional-info" class="form-control mb-2" placeholder="Additional Information" style="width: 100%; height: 100px;"></textarea>
         </div>
     </div>
     <div class="row">
@@ -70,13 +67,26 @@
     };*/
 
     $(document).ready(function() {
-        $('#event-info-dialog').draggable(); // Make the dialog draggable
+        $('#event-info-dialog').draggable(); // draggable
 
         var calendar = $('#calendar').fullCalendar({
             header: {
-                left: 'prev,next today',
+                left: 'prev,next today customCreateEvent',
                 center: 'title',
                 right: 'month,agendaWeek,agendaDay'
+            },
+            customButtons: {
+                customCreateEvent: {
+                    text: 'Create Event',
+                    click: function() {
+                        $('#event-info-dialog').css({
+                            display: 'block',
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)'
+                        });
+                    }
+                }
             },
             events: '/all_events/',
             selectable: true,
@@ -99,11 +109,7 @@
                 $('#additional-info').val('');
                 $('#deleteButton').hide();
                 window.currentEvent = { start: start, end: end };
-                $('#event-info-dialog').show().position({
-                    my: "center",
-                    at: "center",
-                    of: window
-                });
+                $('#event-info-dialog').css('display', 'block');
             },
             eventClick: function (event, jsEvent) {
                 jsEvent.preventDefault();
@@ -119,98 +125,42 @@
                 $('#additional-info').val(event.additional_info || '');
                 window.currentEvent = event;
                 $('#deleteButton').show();
-                $('#event-info-dialog').show().position({
-                    my: "center",
-                    at: "center",
-                    of: window
-                });
-            },
-            eventRender: function(event, element) {
-                element.css('background-color', '#4285f4');
-                element.css('border-color', '#357ae8');
-                element.css('color', '#ffffff');
-            },
-            eventResize: function (event) {
-                var start = event.start.format("Y-MM-DD HH:mm:ss");
-                var end = event.end.format("Y-MM-DD HH:mm:ss");
-                var title = event.title;
-                var id = event.id;
-                $.ajax({
-                    type: "POST",
-                    url: '/update/',
-                    data: {
-                        id: id,
-                        title: title,
-                        start: start,
-                        end: end,
-                        client_name: event.client_name,
-                        client_phone: event.client_phone,
-                        client_address: event.client_address,
-                        additional_info: event.additional_info,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function () {
-                        calendar.fullCalendar('refetchEvents');
-                        alert('Event Updated');
-                    },
-                    error: function () {
-                        alert('There is a problem!!!');
-                    }
-                });
-            },
-            eventDrop: function (event) {
-                var start = event.start.format("Y-MM-DD HH:mm:ss");
-                var end = event.end ? event.end.format("Y-MM-DD HH:mm:ss") : start;
-                var title = event.title;
-                var id = event.id;
-                $.ajax({
-                    type: "POST",
-                    url: '/update/',
-                    data: {
-                        id: id,
-                        title: title,
-                        start: start,
-                        end: end,
-                        client_name: event.client_name,
-                        client_phone: event.client_phone,
-                        client_address: event.client_address,
-                        additional_info: event.additional_info,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function () {
-                        calendar.fullCalendar('refetchEvents');
-                        alert('Event Updated');
-                    },
-                    error: function () {
-                        alert('There is a problem!!!');
-                    }
-                });
-            },
-            viewRender: function(view) {
-                var today = moment().format("YYYY-MM-DD");
-                $(".fc-day").removeClass("fc-today-highlight");
-                $(".fc-day[data-date='" + today + "']").addClass("fc-today-highlight");
+                $('#event-info-dialog').css('display', 'block');
             }
         });
 
-        $('#create-event-button').click(function() {
-            var today = moment().format('YYYY-MM-DD');
-            $('#event-title').val('');
-            $('#event-date').val(today);
-            $('#start-time').val('');
-            $('#end-time').val('');
-            $('#client-name').val('');
-            $('#client-phone').val('');
-            $('#client-address').val('');
-            $('#additional-info').val('');
-            $('#deleteButton').hide();
-            window.currentEvent = { start: today, end: today };
-            $('#event-info-dialog').show().position({
-                my: "center",
-                at: "center",
-                of: window
-            });
+        $(window).resize(function() {
+            if ($('#event-info-dialog').is(':visible')) {
+                $('#event-info-dialog').css({
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)'
+                });
+            }
         });
+
+        // custom button 
+        setTimeout(function() {
+            $('.fc-customCreateEvent-button').css({
+                'background': '#007bff',
+                'color': '#ffffff',
+                'border': 'none',
+                'border-radius': '5px',
+                'padding': '6px 12px',
+                'cursor': 'pointer',
+                'font-size': '14px',
+                'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
+                'margin-left': '10px',
+                'text-shadow': 'none' // no text shadow
+            }).hover(
+                function() {
+                    $(this).css('background', '#0056b3');
+                },
+                function() {
+                    $(this).css('background', '#007bff');
+                }
+            );
+        }, 10);
 
         window.saveEvent = function() {
             var date = $('#event-date').val();
