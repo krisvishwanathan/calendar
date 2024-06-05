@@ -15,6 +15,7 @@
             <input id="event-title" type="text" class="form-control mb-2" placeholder="Event Title">
         </div>
         <div class="col-md-6">
+            <label for="event-date">Event Date</label>
             <input id="event-date" type="date" class="form-control mb-2">
         </div>
     </div>
@@ -67,7 +68,7 @@
     };*/
 
     $(document).ready(function() {
-        $('#event-info-dialog').draggable(); // draggable
+        $('#event-info-dialog').draggable(); // Make the dialog draggable
 
         var calendar = $('#calendar').fullCalendar({
             header: {
@@ -91,8 +92,8 @@
             events: '/all_events/',
             selectable: true,
             selectHelper: true,
-            editable: true,  // Allow editing
-            droppable: true,  // Allow dragging
+            editable: true,
+            droppable: true,
             eventLimit: true,
             select: function (start, end) {
                 var date = moment(start).format('YYYY-MM-DD');
@@ -128,19 +129,14 @@
                 $('#event-info-dialog').css('display', 'block');
             },
             eventDrop: function(event, delta, revertFunc) {
-                var start = event.start.format();
-                var end = event.end ? event.end.format() : start;
-                var title = event.title;
-                var id = event.id;
-
                 $.ajax({
                     type: "POST",
                     url: '/update/',
                     data: {
-                        id: id,
-                        title: title,
-                        start: start,
-                        end: end,
+                        id: event.id,
+                        title: event.title,
+                        start: event.start.format(),
+                        end: event.end ? event.end.format() : event.start.format(),
                         client_name: event.client_name,
                         client_phone: event.client_phone,
                         client_address: event.client_address,
@@ -173,7 +169,7 @@
             }
         });
 
-        // custom button 
+        // custom button styling and functionality
         setTimeout(function() {
             $('.fc-customCreateEvent-button').css({
                 'background': '#007bff',
@@ -185,7 +181,7 @@
                 'font-size': '14px',
                 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
                 'margin-left': '10px',
-                'text-shadow': 'none' // no text shadow
+                'text-shadow': 'none'
             }).hover(
                 function() {
                     $(this).css('background', '#0056b3');
