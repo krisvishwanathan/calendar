@@ -126,6 +126,40 @@
                 window.currentEvent = event;
                 $('#deleteButton').show();
                 $('#event-info-dialog').css('display', 'block');
+            },
+            eventDrop: function(event, delta, revertFunc) {
+                var start = event.start.format();
+                var end = event.end ? event.end.format() : start;
+                var title = event.title;
+                var id = event.id;
+
+                $.ajax({
+                    type: "POST",
+                    url: '/update/',
+                    data: {
+                        id: id,
+                        title: title,
+                        start: start,
+                        end: end,
+                        client_name: event.client_name,
+                        client_phone: event.client_phone,
+                        client_address: event.client_address,
+                        additional_info: event.additional_info,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'Success') {
+                            alert('Event Updated');
+                        } else {
+                            alert('Failed to update event: ' + response.msg);
+                            revertFunc();
+                        }
+                    },
+                    error: function() {
+                        alert('Error processing your request.');
+                        revertFunc();
+                    }
+                });
             }
         });
 
