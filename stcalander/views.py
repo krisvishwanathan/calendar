@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.conf import settings
 from django.urls import reverse
+from django.conf import settings
 
 def user_is_authorized(function):
     def wrap(request, *args, **kwargs):
@@ -119,4 +120,47 @@ def remove(request):
     else:
         return HttpResponse("Invalid request", status=400)
     
+def add_event(event_info):
+    try:
+        event = Events(
+            user=event_info.user,
+            name=event_info.name,
+            start=event_info.start,
+            end=event_info.end,
+            client_name=event_info.client_name,
+            client_phone=event_info.client_phone,
+            client_address=event_info.client_address,
+            additional_info=event_info.additional_info
+        )
+        event.save()
+        print("\nAdd function\n")
+        return JsonResponse({'status': 'Success', 'msg': 'Event added successfully'})
+    except:
+        return JsonResponse({'status': 'Fail', 'msg': 'Unable to add Event'})
 
+def update_event(event_info, events_list):
+    try:
+        event = Events.objects.get(id=event_info.id, user=event_info.user)
+        event.name = event_info.name
+        event.start = event_info.start
+        event.end = event_info.end
+        event.client_name = event_info.client_name
+        event.client_phone = event_info.client_phone
+        event.client_address = event_info.client_address
+        event.additional_info = event_info.additional_info
+        event.save()
+        print("\nUpdate function\n")
+        return JsonResponse({'status': 'Success', 'msg': 'Event updated successfully'})
+    except Events.DoesNotExist:
+        return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})
+
+def remove_event(event_info):
+    try:
+        event = Events.objects.get(id=event_info.id, user=event_info.user)
+        event.delete()
+        print("\nRemove function\n")
+        return JsonResponse({'status': 'Success', 'msg': 'Event deleted successfully'})
+    except Events.DoesNotExist:
+        return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})
+    else:
+        return HttpResponse("Invalid request", status=400)

@@ -4,6 +4,8 @@ from stcalander.models import Events
 from django.urls import reverse
 from django.utils import timezone
 import pytz
+import json
+from views import add_event, update_event, remove_event
 
 class EventsCRUDTest(TestCase): 
 
@@ -21,7 +23,7 @@ class EventsCRUDTest(TestCase):
             additional_info='Test additional info'
         )
     
-# Test the login functionality
+    # Test the login functionality
     def test_login(self):
         """
         Test that a user can log in successfully.
@@ -29,7 +31,7 @@ class EventsCRUDTest(TestCase):
         response = self.client.post(reverse('login'), {'username': 'testuser', 'password': 'testpassword'})
         self.assertEqual(response.status_code, 302)
 
-# Test adding a new event
+    # Test adding a new event via view
     def test_add_event(self):
         """
         Test that a new event can be added successfully.
@@ -47,7 +49,7 @@ class EventsCRUDTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {'status': 'Success', 'msg': 'Event added successfully'})
 
-# Test updating an existing event
+    # Test updating an existing event via view
     def test_update_event(self):
         """
         Test that an existing event can be updated successfully.
@@ -66,7 +68,7 @@ class EventsCRUDTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {'status': 'Success', 'msg': 'Event updated successfully'})
 
-# Test deleting an event
+    # Test deleting an event via view
     def test_delete_event(self):
         """
         Test that an event can be deleted successfully.
@@ -76,7 +78,7 @@ class EventsCRUDTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {'status': 'Success', 'msg': 'Event deleted successfully'})
 
-# Test viewing all events for the logged-in user
+    # Test viewing all events for the logged-in user via view
     def test_view_all_events(self):
         """
         Test that all events for the logged-in user can be viewed successfully.
@@ -87,7 +89,7 @@ class EventsCRUDTest(TestCase):
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]['title'], 'Test Event')
 
-# Test unauthorized access
+    # Test unauthorized access
     def test_unauthorized_access(self):
         """
         Test that unauthorized users cannot access certain endpoints.
@@ -95,5 +97,56 @@ class EventsCRUDTest(TestCase):
         endpoints = [reverse('add_event'), reverse('update'), reverse('remove'), reverse('all_events')]
         for endpoint in endpoints:
             response = self.client.get(endpoint)
-            self.assertEqual(response.status_code, 302)  #redirect to login
+            self.assertEqual(response.status_code, 302)  # redirect to login
 
+    # Additional tests for new add_event function
+    def test_add_event_function(self):
+        """
+        Test the add_event function directly.
+        """
+        event_info = {
+            'user': self.user,
+            'name': 'Function Test Event',
+            'start': timezone.now(),
+            'end': timezone.now() + timezone.timedelta(hours=2),
+            'client_name': 'Function Test Client',
+            'client_phone': '0987654321',
+            'client_address': 'Function Test Street',
+            'additional_info': 'Function Test additional info'
+        }
+        response = add_event(event_info)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'Success', 'msg': 'Event added successfully'})
+
+    # Additional tests for new update_event function
+    def test_update_event_function(self):
+        """
+        Test the update_event function directly.
+        """
+        event_info = {
+            'id': self.event.id,
+            'user': self.user,
+            'name': 'Updated Function Test Event',
+            'start': timezone.now(),
+            'end': timezone.now() + timezone.timedelta(hours=2),
+            'client_name': 'Updated Function Test Client',
+            'client_phone': '1122334455',
+            'client_address': 'Updated Function Test Street',
+            'additional_info': 'Updated Function Test additional info'
+        }
+        response = update_event(event_info, [])
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'Success', 'msg': 'Event updated successfully'})
+
+    # Additional tests for new remove_event function
+    def test_remove_event_function(self):
+        """
+        Test the remove_event function directly.
+        """
+        event_info = {
+            'id': self.event.id,
+            'user': self.user
+        }
+        response = remove_event(event_info)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'Success', 'msg': 'Event deleted successfully'})
