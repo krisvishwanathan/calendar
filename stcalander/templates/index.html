@@ -6,43 +6,106 @@
 <div class="col-md-12">
     <div id="calendar"></div>
 </div>
-<!--button id="logout-button">Logout</button-->
-<div id="event-info-dialog" style="display:none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 600px; width: 90%; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 1001; overflow-y: auto; max-height: 80vh;">
-    <div id="event-info-dialog-header" style="font-weight: bold; margin-bottom: 10px;">Event Information</div>
+<!-- Style for invalid input and required field indicator -->
+<style>
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+    .is-invalid {
+        border-color: red;
+    }
+    .backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: none;
+    }
+    .dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0;
+    }
+    .dialog-header-title {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        line-height: 1;
+        color: #6c757d;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+    }
+    .btn-close:hover {
+        color: #343a40;
+    }
+    .horizontal-line {
+        border-top: 1px solid #dee2e6;
+        margin: 1rem -20px;
+        width: calc(100% + 40px);
+    }
+    .button-container {
+        margin-bottom: 0rem;
+        margin-top: 1rem;
+    }
+    .fc-toolbar .fc-center {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    .fc-toolbar .fc-center h2 {
+        margin: 0;
+    }
+</style>
+<div class="backdrop" id="backdrop"></div>
+<div id="event-info-dialog" style="display:none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 650px; width: 90%; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 1001; overflow-y: auto; max-height: 85vh;">
+    <div class="dialog-header">
+        <div class="dialog-header-title">Event Details</div>
+        <button type="button" class="btn-close" aria-label="Close" onclick="closeDialog()">&times;</button>
+    </div>
+    <div class="horizontal-line"></div>
     <div class="row">
         <div class="col-md-6">
             <label for="event-title">Event Title</label>
             <input id="event-title" type="text" class="form-control mb-2" placeholder="Event Title">
         </div>
         <div class="col-md-6">
-            <label for="event-date">Event Date</label>
-            <input id="event-date" type="date" class="form-control mb-2">
+            <label for="event-date" class="required-field">Event Date</label>
+            <input id="event-date" type="date" class="form-control mb-2" required>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
-            <label for="start-time">Start Time</label>
-            <input id="start-time" type="time" class="form-control mb-2">
+            <label for="start-time" class="required-field">Start Time</label>
+            <input id="start-time" type="time" class="form-control mb-2" required>
         </div>
         <div class="col-md-6">
-            <label for="end-time">End Time</label>
-            <input id="end-time" type="time" class="form-control mb-2">
+            <label for="end-time" class="required-field">End Time</label>
+            <input id="end-time" type="time" class="form-control mb-2" required>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
-            <label for="client-name">Client Name</label>
-            <input id="client-name" type="text" class="form-control mb-2" placeholder="Client Name">
+            <label for="client-name" class="required-field">Client Name</label>
+            <input id="client-name" type="text" class="form-control mb-2" placeholder="Client Name" required>
         </div>
         <div class="col-md-6">
-            <label for="client-phone">Client Phone Number</label>
-            <input id="client-phone" type="text" class="form-control mb-2" placeholder="Client Phone Number">
+            <label for="client-phone" class="required-field">Client Phone Number</label>
+            <input id="client-phone" type="text" class="form-control mb-2" placeholder="Client Phone Number" required>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12">
-            <label for="client-address">Client Address</label>
-            <input id="client-address" type="text" class="form-control mb-2" placeholder="Client Address" style="width: 100%;">
+            <label for="client-email" class="required-field">Client Email</label>
+            <input id="client-email" type="email" class="form-control mb-2" placeholder="Client Email Address" required>
         </div>
     </div>
     <div class="row">
@@ -51,11 +114,12 @@
             <textarea id="additional-info" class="form-control mb-2" placeholder="Additional Information" style="height: 100px; width: 100%;"></textarea>
         </div>
     </div>
-    <div class="row">
+    <div class="horizontal-line"></div>
+    <div class="row button-container">
         <div class="col-md-12 text-center">
             <button class="btn btn-primary" onclick="saveEvent()">Save</button>
             <button class="btn btn-danger" onclick="deleteEvent()" id="deleteButton">Delete</button>
-            <button class="btn btn-secondary" onclick="closeDialog()">Close</button>
+            <button class="btn btn-secondary" onclick="closeDialog()">Cancel</button>
         </div>
     </div>
 </div>
@@ -63,23 +127,17 @@
 
 {% block customCalJS %}
 <script>
-    /*document.getElementById('logout-button').onclick = function() {
-        window.location.href = "{% url namespace|add:'logout' %}";
-    };*/
-
     $(document).ready(function() {
-        // Draggable with proper settings to avoid cursor issues
+        // Draggable
         $('#event-info-dialog').draggable({
             containment: "window",
             start: function(event, ui) {
-                // Store initial position
                 var left = parseInt($(this).css('left'), 10);
                 var top = parseInt($(this).css('top'), 10);
                 $(this).data('startLeft', left);
                 $(this).data('startTop', top);
             },
             drag: function(event, ui) {
-                // Adjust position based on the initial position to prevent jumping
                 var startLeft = $(this).data('startLeft');
                 var startTop = $(this).data('startTop');
                 ui.position.left = startLeft + (ui.position.left - ui.originalPosition.left);
@@ -94,6 +152,12 @@
                 top: '50%',
                 transform: 'translate(-50%, -50%)'
             });
+            $('#backdrop').show();
+        }
+
+        function closeDialog() {
+            $('#event-info-dialog').hide();
+            $('#backdrop').hide();
         }
 
         var calendar = $('#calendar').fullCalendar({
@@ -106,30 +170,20 @@
                 customCreateEvent: {
                     text: 'Create Event',
                     click: function() {
+                        clearDialogFields();
                         centerDialog();
                     }
                 }
             },
-            events: "{% url namespace|add:'all_events' %}",
+            events: "{% url 'stcalander:all_events' %}",
             selectable: true,
             selectHelper: true,
             editable: true,
             droppable: true,
             eventLimit: true,
             select: function (start, end) {
-                var date = moment(start).format('YYYY-MM-DD');
-                var startTime = moment(start).format('HH:mm');
-                var endTime = moment(end).format('HH:mm');
-
-                $('#event-title').val('');
-                $('#event-date').val(date);
-                $('#start-time').val(startTime);
-                $('#end-time').val(endTime);
-                $('#client-name').val('');
-                $('#client-phone').val('');
-                $('#client-address').val('');
-                $('#additional-info').val('');
-                $('#deleteButton').hide();
+                clearDialogFields();
+                $('#event-date').val(moment(start).format('YYYY-MM-DD'));
                 window.currentEvent = { start: start, end: end };
                 centerDialog();
             },
@@ -140,10 +194,10 @@
                 $('#event-title').val(event.title);
                 $('#event-date').val(moment(event.start).format('YYYY-MM-DD'));
                 $('#start-time').val(moment(event.start).format('HH:mm'));
-                $('#end-time').val(moment(event.end).format('HH:mm'));
+                $('#end-time').val(event.end ? moment(event.end).format('HH:mm') : '');
                 $('#client-name').val(event.client_name || '');
                 $('#client-phone').val(event.client_phone || '');
-                $('#client-address').val(event.client_address || '');
+                $('#client-email').val(event.client_address || ''); 
                 $('#additional-info').val(event.additional_info || '');
                 window.currentEvent = event;
                 $('#deleteButton').show();
@@ -152,7 +206,7 @@
             eventDrop: function(event, delta, revertFunc) {
                 $.ajax({
                     type: "POST",
-                    url: "{% url namespace|add:'update' %}",
+                    url: "{% url 'stcalander:update' %}",
                     data: {
                         id: event.id,
                         title: event.title,
@@ -186,19 +240,21 @@
             }
         });
 
-        // custom button styling and functionality
+        // custom button 
         setTimeout(function() {
             $('.fc-customCreateEvent-button').css({
                 'background': '#007bff',
                 'color': '#ffffff',
                 'border': 'none',
                 'border-radius': '5px',
-                'padding': '6px 12px',
+                'padding': '7px 10px',
                 'cursor': 'pointer',
-                'font-size': '14px',
-                'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.2)',
+                'font-size': '16px',
                 'margin-left': '10px',
-                'text-shadow': 'none'
+                'text-shadow': 'none',
+                'display': 'flex',
+                'align-items': 'center',
+                'justify-content': 'center'
             }).hover(
                 function() {
                     $(this).css('background', '#0056b3');
@@ -210,15 +266,31 @@
         }, 10);
 
         window.saveEvent = function() {
+            var fields = ['#event-date', '#start-time', '#end-time', '#client-name', '#client-phone', '#client-email'];
+            var isValid = true;
+            for (var i = 0; i < fields.length; i++) {
+                if (!$(fields[i]).val()) {
+                    $(fields[i]).addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $(fields[i]).removeClass('is-invalid');
+                }
+            }
+
+            if (!isValid) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
             var date = $('#event-date').val();
             var startTime = $('#start-time').val();
             var endTime = $('#end-time').val();
             var startDateTime = date + 'T' + startTime;
-            var endDateTime = endTime ? (date + 'T' + endTime) : startDateTime;
+            var endDateTime = date + 'T' + endTime;
 
             $.ajax({
                 type: "POST",
-                url: window.currentEvent.id ? "{% url namespace|add:'update' %}" : "{% url namespace|add:'add_event' %}",
+                url: window.currentEvent.id ? "{% url 'stcalander:update' %}" : "{% url 'stcalander:add_event' %}",
                 data: {
                     id: window.currentEvent.id,
                     title: $('#event-title').val(),
@@ -226,13 +298,14 @@
                     end: endDateTime,
                     client_name: $('#client-name').val(),
                     client_phone: $('#client-phone').val(),
-                    client_address: $('#client-address').val(),
+                    client_address: $('#client-email').val(), 
                     additional_info: $('#additional-info').val(),
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
                 success: function(response) {
                     if (response.status === 'Success') {
                         $('#event-info-dialog').hide();
+                        $('#backdrop').hide();
                         $('#calendar').fullCalendar('refetchEvents');
                         alert(window.currentEvent.id ? 'Event Updated' : 'Event Added');
                     } else {
@@ -249,7 +322,7 @@
             if (confirm("Are you sure you want to delete this event?")) {
                 $.ajax({
                     type: "POST",
-                    url: "{% url namespace|add:'remove' %}",
+                    url: "{% url 'stcalander:remove' %}",
                     data: {
                         id: window.currentEvent.id,
                         csrfmiddlewaretoken: '{{ csrf_token }}'
@@ -257,6 +330,7 @@
                     success: function(response) {
                         if (response.status === 'Success') {
                             $('#event-info-dialog').hide();
+                            $('#backdrop').hide();
                             $('#calendar').fullCalendar('refetchEvents');
                             alert('Event Deleted');
                         } else {
@@ -272,7 +346,20 @@
 
         window.closeDialog = function() {
             $('#event-info-dialog').hide();
+            $('#backdrop').hide();
         };
+
+        function clearDialogFields() {
+            $('#event-title').val('');
+            $('#event-date').val('');
+            $('#start-time').val('');
+            $('#end-time').val('');
+            $('#client-name').val('');
+            $('#client-phone').val('');
+            $('#client-email').val('');
+            $('#additional-info').val('');
+            $('#deleteButton').hide();
+        }
     });
 </script>
 {% endblock %}
