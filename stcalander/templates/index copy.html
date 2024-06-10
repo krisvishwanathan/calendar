@@ -288,11 +288,14 @@
             var startDateTime = date + 'T' + startTime;
             var endDateTime = date + 'T' + endTime;
 
+            // Check for event ID
+            var eventId = window.currentEvent && window.currentEvent.id ? window.currentEvent.id : '';
+
             $.ajax({
                 type: "POST",
-                url: window.currentEvent.id ? "{% url 'update' %}" : "{% url 'add_event' %}",
+                url: eventId ? "{% url 'update' %}" : "{% url 'add_event' %}",
                 data: {
-                    id: window.currentEvent.id,
+                    id: eventId,
                     title: $('#event-title').val(),
                     start: startDateTime,
                     end: endDateTime,
@@ -307,7 +310,7 @@
                         $('#event-info-dialog').hide();
                         $('#backdrop').hide();
                         $('#calendar').fullCalendar('refetchEvents');
-                        alert(window.currentEvent.id ? 'Event Updated' : 'Event Added');
+                        alert(eventId ? 'Event Updated' : 'Event Added');
                     } else {
                         alert('Failed to save event: ' + response.msg);
                     }
@@ -359,6 +362,7 @@
             $('#client-email').val('');
             $('#additional-info').val('');
             $('#deleteButton').hide();
+            window.currentEvent = {};  // Initialize window.currentEvent
         }
     });
 </script>

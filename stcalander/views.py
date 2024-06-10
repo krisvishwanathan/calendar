@@ -6,8 +6,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.conf import settings
-from django.urls import reverse
-from django.conf import settings
 
 def user_is_authorized(function):
     def wrap(request, *args, **kwargs):
@@ -33,7 +31,6 @@ def user_login(request):
     else:
         error = request.GET.get('error')
         return render(request, 'login.html', {'error': 'You are not authorized to access this page. Please login to continue.' if error else None})
-
 
 @user_is_authorized
 def index(request):  
@@ -119,8 +116,9 @@ def remove(request):
             return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})
     else:
         return HttpResponse("Invalid request", status=400)
-    
-def add_event(event_info):
+
+# Additional utility methods
+def add_event_util(event_info):
     try:
         event = Events(
             user=event_info.user,
@@ -133,12 +131,11 @@ def add_event(event_info):
             additional_info=event_info.additional_info
         )
         event.save()
-        print("\nAdd function\n")
         return JsonResponse({'status': 'Success', 'msg': 'Event added successfully'})
     except:
         return JsonResponse({'status': 'Fail', 'msg': 'Unable to add Event'})
 
-def update_event(event_info, events_list):
+def update_event_util(event_info, events_list):
     try:
         event = Events.objects.get(id=event_info.id, user=event_info.user)
         event.name = event_info.name
@@ -149,16 +146,14 @@ def update_event(event_info, events_list):
         event.client_address = event_info.client_address
         event.additional_info = event_info.additional_info
         event.save()
-        print("\nUpdate function\n")
         return JsonResponse({'status': 'Success', 'msg': 'Event updated successfully'})
     except Events.DoesNotExist:
         return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})
 
-def remove_event(event_info):
+def remove_event_util(event_info):
     try:
         event = Events.objects.get(id=event_info.id, user=event_info.user)
         event.delete()
-        print("\nRemove function\n")
         return JsonResponse({'status': 'Success', 'msg': 'Event deleted successfully'})
     except Events.DoesNotExist:
         return JsonResponse({'status': 'Fail', 'msg': 'Event not found'})

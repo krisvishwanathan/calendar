@@ -197,7 +197,7 @@
                 $('#end-time').val(event.end ? moment(event.end).format('HH:mm') : '');
                 $('#client-name').val(event.client_name || '');
                 $('#client-phone').val(event.client_phone || '');
-                $('#client-email').val(event.client_address || ''); 
+                $('#client-email').val(event.client_address || '');  // Use client_address for email
                 $('#additional-info').val(event.additional_info || '');
                 window.currentEvent = event;
                 $('#deleteButton').show();
@@ -288,11 +288,14 @@
             var startDateTime = date + 'T' + startTime;
             var endDateTime = date + 'T' + endTime;
 
+            // Check for event ID
+            var eventId = window.currentEvent && window.currentEvent.id ? window.currentEvent.id : '';
+
             $.ajax({
                 type: "POST",
-                url: window.currentEvent.id ? "{% url 'stcalander:update' %}" : "{% url 'stcalander:add_event' %}",
+                url: eventId ? "{% url 'stcalander:update' %}" : "{% url 'stcalander:add_event' %}",
                 data: {
-                    id: window.currentEvent.id,
+                    id: eventId,
                     title: $('#event-title').val(),
                     start: startDateTime,
                     end: endDateTime,
@@ -307,7 +310,7 @@
                         $('#event-info-dialog').hide();
                         $('#backdrop').hide();
                         $('#calendar').fullCalendar('refetchEvents');
-                        alert(window.currentEvent.id ? 'Event Updated' : 'Event Added');
+                        alert(eventId ? 'Event Updated' : 'Event Added');
                     } else {
                         alert('Failed to save event: ' + response.msg);
                     }
@@ -359,6 +362,7 @@
             $('#client-email').val('');
             $('#additional-info').val('');
             $('#deleteButton').hide();
+            window.currentEvent = {};  // Initialize window.currentEvent
         }
     });
 </script>
