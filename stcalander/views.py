@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.conf import settings
-from django.urls import reverse, NoReverseMatch
+from django.urls import reverse
 
 def user_is_authorized(function):
     def wrap(request, *args, **kwargs):
@@ -119,11 +119,4 @@ def remove(request):
     else:
         return HttpResponse("Invalid request", status=400)
     
-def my_view(request):
-    context = {}
-    try:
-        reverse('stcalander:your_view_name')
-        context['namespace'] = 'stcalander:'
-    except NoReverseMatch:
-        context['namespace'] = ''
-    return render(request, 'index.html', context)
+
